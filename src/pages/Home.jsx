@@ -1,48 +1,94 @@
-import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { participantAPI, competitionAPI, eventAPI } from '../services/api'
+import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useContext } from 'react'
+import { participantAPI, competitionAPI, eventAPI, userEventAPI } from '../services/api'
 import toast from 'react-hot-toast'
+import { AuthContext } from '../contexts/AuthContext'
 
 export default function Home() {
+  const navigate = useNavigate()
+  const { user, token, isAuthenticated } = useContext(AuthContext)
   const [stats, setStats] = useState({
-    totalParticipants: 0,
-    faceoffCount: 0,
-    talentCount: 0
+    totalParticipants: 0
   })
   const [competitions, setCompetitions] = useState([])
+  const [userEvents, setUserEvents] = useState([])
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [registering, setRegistering] = useState({})
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch stats, competitions, and event data in parallel
-        const [statsResponse, competitionsResponse, eventResponse] = await Promise.all([
-          participantAPI.getStats(),
-          competitionAPI.getAll(),
-          eventAPI.get()
-        ])
-
-        if (statsResponse.data.success) {
-          setStats(statsResponse.data.stats)
-        }
-
-        if (competitionsResponse.data.success) {
-          setCompetitions(competitionsResponse.data.competitions)
-        }
-
-        if (eventResponse.data.success) {
-          setEvent(eventResponse.data.event)
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        toast.error('Error loading page data')
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchUserEvents()
+    }
+  }, [isAuthenticated, token])
+
+  const fetchData = async () => {
+    try {
+      // Fetch stats, competitions, and event data in parallel
+      const [statsResponse, competitionsResponse, eventResponse] = await Promise.all([
+        participantAPI.getStats(),
+        competitionAPI.getAll(),
+        eventAPI.get()
+      ])
+
+      if (statsResponse.data.success) {
+        setStats(statsResponse.data.stats)
+      }
+
+      if (competitionsResponse.data.success) {
+        setCompetitions(competitionsResponse.data.competitions)
+      }
+
+      if (eventResponse.data.success) {
+        setEvent(eventResponse.data.event)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      toast.error('Error loading page data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchUserEvents = async () => {
+    try {
+      const response = await userEventAPI.getMyEvents()
+      if (response.data.success) {
+        setUserEvents(response.data.events.map(e => e._id))
+      }
+    } catch (error) {
+      console.error('Error fetching user events:', error)
+    }
+  }
+
+  const handleRegisterForCompetition = async (competitionId) => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to register for competitions')
+      navigate('/login')
+      return
+    }
+
+    setRegistering(prev => ({ ...prev, [competitionId]: true }))
+    try {
+      const response = await userEventAPI.registerForCompetition(competitionId)
+
+      if (response.data.success) {
+        toast.success('Successfully registered for the competition!')
+        setUserEvents([...userEvents, competitionId])
+      } else {
+        toast.error(response.data.message || 'Failed to register')
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Error registering for competition')
+      console.error(error)
+    } finally {
+      setRegistering(prev => ({ ...prev, [competitionId]: false }))
+    }
+  }
 
   if (loading) {
     return (
@@ -152,16 +198,37 @@ export default function Home() {
                 </div>
 
                 <div className="mt-6">
-                  <Link
-                    to={`/register?competition=${competition._id}`}
-                    className={`inline-block w-full text-center font-bold py-3 px-6 rounded-lg transition ${
-                      index % 2 === 0
-                        ? 'bg-yoga-600 hover:bg-yoga-700 text-white'
-                        : 'bg-purple-600 hover:bg-purple-700 text-white'
-                    }`}
-                  >
-                    Register Now
-                  </Link>
+                  {userEvents.includes(competition._id) ? (
+                    <button
+                      disabled
+                      className="inline-block w-full text-center font-bold py-3 px-6 rounded-lg transition bg-green-500 text-white cursor-not-allowed"
+                    >
+                      ✓ Already Registered
+                    </button>
+                  ) : isAuthenticated ? (
+                    <button
+                      onClick={() => handleRegisterForCompetition(competition._id)}
+                      disabled={registering[competition._id]}
+                      className={`inline-block w-full text-center font-bold py-3 px-6 rounded-lg transition ${
+                        index % 2 === 0
+                          ? 'bg-yoga-600 hover:bg-yoga-700 text-white disabled:bg-gray-400'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-400'
+                      }`}
+                    >
+                      {registering[competition._id] ? 'Registering...' : 'Register Now'}
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/register?competition=${competition._id}`}
+                      className={`inline-block w-full text-center font-bold py-3 px-6 rounded-lg transition ${
+                        index % 2 === 0
+                          ? 'bg-yoga-600 hover:bg-yoga-700 text-white'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      }`}
+                    >
+                      Register Now
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

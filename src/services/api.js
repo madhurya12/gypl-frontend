@@ -9,9 +9,16 @@ const api = axios.create({
   }
 })
 
-// Add JWT token to requests if available
+// Add JWT token to requests if available (support both admin and user tokens)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken')
+  // Check for user token first
+  let token = localStorage.getItem('userToken')
+  
+  // If no user token, check for admin token
+  if (!token) {
+    token = localStorage.getItem('adminToken')
+  }
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -42,6 +49,18 @@ export const adminAPI = {
   signup: (data) => api.post('/admin/signup', data),
   signin: (data) => api.post('/admin/signin', data),
   getProfile: () => api.get('/admin/profile'),
+}
+
+export const authAPI = {
+  signup: (data) => api.post('/auth/signup', data),
+  login: (data) => api.post('/auth/login', data),
+  getProfile: () => api.get('/auth/profile'),
+}
+
+export const userEventAPI = {
+  registerForCompetition: (competitionId) => api.post(`/user/register/${competitionId}`),
+  getMyEvents: () => api.get('/user/my-events'),
+  unregisterFromCompetition: (competitionId) => api.delete(`/user/unregister/${competitionId}`),
 }
 
 export default api
