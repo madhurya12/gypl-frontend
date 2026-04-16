@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { participantAPI, competitionAPI } from '../services/api'
+import { AuthContext } from '../contexts/AuthContext'
+import { participantAPI, competitionAPI, authAPI } from '../services/api'
 
 export default function Registration() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { user: authUser } = useContext(AuthContext)
   const [loading, setLoading] = useState(false)
   const [competitions, setCompetitions] = useState([])
   const [competitionsLoading, setCompetitionsLoading] = useState(true)
+  const [userDetailsLoading, setUserDetailsLoading] = useState(true)
+  const [userDetails, setUserDetails] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -22,8 +26,29 @@ export default function Registration() {
 
   const [errors, setErrors] = useState({})
 
+  // Fetch user details and competitions on mount
   useEffect(() => {
-    const fetchCompetitions = async () => {
+    const fetchData = async () => {
+      try {
+        // Fetch user profile to get pre-fill data
+        const userResponse = await authAPI.getProfile()
+        if (userResponse.data.success) {
+          setUserDetails(userResponse.data.user)
+          setFormData(prev => ({
+            ...prev,
+            name: userResponse.data.user.name || '',
+            email: userResponse.data.user.email || '',
+            phone: userResponse.data.user.phone || ''
+          }))
+        }
+      } catch (error) {
+        console.error('Error fetching user details:', error)
+        // Still allow form to work, just without pre-fill
+      } finally {
+        setUserDetailsLoading(false)
+      }
+
+      // Fetch competitions
       try {
         const response = await competitionAPI.getAll()
         if (response.data.success) {
@@ -44,7 +69,8 @@ export default function Registration() {
         setCompetitionsLoading(false)
       }
     }
-    fetchCompetitions()
+
+    fetchData()
   }, [searchParams])
 
   const validateForm = () => {
@@ -106,7 +132,7 @@ export default function Registration() {
           address: ''
         })
         setTimeout(() => {
-          navigate('/')
+          navigate('/my-events')
         }, 2000)
       }
     } catch (error) {
@@ -121,24 +147,75 @@ export default function Registration() {
     <div className="min-h-screen bg-gradient-to-b from-yoga-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="bg-white shadow-lg rounded-lg p-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-yoga-700 mb-2">Registration Form</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-yoga-700 mb-2">Event Registration</h1>
           <p className="text-gray-600 mb-8">Join Grand Yoga Premier League 2026</p>
+
+          {/* User Account Info Alert */}
+          <div className="mb-6 p-4 bg-yoga-50 border border-yoga-200 rounded-lg">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">ℹ️ Account Information:</span> Fields marked with <span className="text-yoga-600 font-semibold">■</span> are pre-filled from your account.
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <span className="text-yoga-600">■</span>
+                Full Name *
+              </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 ${
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 bg-gray-50 ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
+              <p className="text-xs text-gray-500 mt-1">From your account</p>
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <span className="text-yoga-600">■</span>
+                Email *
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your@email.com"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 bg-gray-50 ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <p className="text-xs text-gray-500 mt-1">From your account</p>
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            </div>
+
+            {/* Phone Number */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <span className="text-yoga-600">■</span>
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="10-digit phone number"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 bg-gray-50 ${
+                  errors.phone ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <p className="text-xs text-gray-500 mt-1">From your account</p>
+              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
             </div>
 
             {/* Age and Gender */}
@@ -215,38 +292,6 @@ export default function Registration() {
                 }`}
               />
               {errors.instructor && <p className="text-red-500 text-sm mt-1">{errors.instructor}</p>}
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="10-digit phone number"
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 ${
-                  errors.phone ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="your@email.com"
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yoga-600 ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
 
             {/* Address */}

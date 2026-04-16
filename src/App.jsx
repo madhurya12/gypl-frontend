@@ -5,6 +5,7 @@ import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import { AuthProvider } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import PrivateRoute from './components/PrivateRoute'
 import Home from './pages/Home'
 import Registration from './pages/Registration'
 import Admin from './pages/Admin'
@@ -25,10 +26,24 @@ function App() {
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/register" element={<Registration />} />
+                <Route 
+                  path="/register" 
+                  element={
+                    <PrivateRoute>
+                      <Registration />
+                    </PrivateRoute>
+                  } 
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/my-events" element={<MyEvents />} />
+                <Route 
+                  path="/my-events" 
+                  element={
+                    <PrivateRoute>
+                      <MyEvents />
+                    </PrivateRoute>
+                  } 
+                />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/signin" element={<AdminSignin />} />
                 <Route path="/admin/signup" element={<AdminSignup />} />

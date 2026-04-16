@@ -37,6 +37,8 @@ export default function Admin() {
       if (participantsResponse.data.success) {
         setParticipants(participantsResponse.data.participants)
         setFilteredParticipants(participantsResponse.data.participants)
+        console.log(participantsResponse.data.participants);
+        
       }
 
       if (competitionsResponse.data.success) {
