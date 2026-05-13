@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react'
+import { authAPI } from '../services/api'
 
 export const AuthContext = createContext()
 
@@ -22,13 +23,8 @@ export function AuthProvider({ children }) {
 
   const signup = async (userData) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
-
-      const data = await response.json()
+      const response = await authAPI.signup(userData)
+      const data = response.data
 
       if (data.success) {
         setToken(data.token)
@@ -40,19 +36,14 @@ export function AuthProvider({ children }) {
         return { success: false, message: data.message }
       }
     } catch (error) {
-      return { success: false, message: error.message }
+      return { success: false, message: error.response?.data?.message || error.message }
     }
   }
 
   const login = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
-
-      const data = await response.json()
+      const response = await authAPI.login(credentials)
+      const data = response.data
 
       if (data.success) {
         setToken(data.token)
@@ -64,7 +55,7 @@ export function AuthProvider({ children }) {
         return { success: false, message: data.message }
       }
     } catch (error) {
-      return { success: false, message: error.message }
+      return { success: false, message: error.response?.data?.message || error.message }
     }
   }
 
