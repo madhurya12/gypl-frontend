@@ -9,30 +9,43 @@ const Button = ({
   onClick,
   ...props
 }) => {
-  const baseClasses = 'font-semibold rounded-xl transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 inline-flex items-center justify-center'
+  const base =
+    'font-semibold rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-50 inline-flex items-center justify-center gap-2 whitespace-nowrap'
 
   const variants = {
-    primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 focus:ring-primary-500',
-    secondary: 'bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 shadow-lg hover:shadow-xl transform hover:scale-105 focus:ring-white/50',
-    outline: 'bg-transparent border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105 focus:ring-primary-500',
-    glass: 'glass text-gray-800 hover:bg-white/20 shadow-lg hover:shadow-xl transform hover:scale-105 focus:ring-white/50'
+    primary:
+      'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white shadow-soft-md hover:shadow-soft-lg focus-visible:ring-primary-500',
+    secondary:
+      'bg-surface-900 hover:bg-surface-800 text-white shadow-soft-md hover:shadow-soft-lg focus-visible:ring-surface-500',
+    outline:
+      'bg-white border border-surface-200 hover:bg-surface-50 hover:border-surface-300 text-surface-900 shadow-soft focus-visible:ring-primary-500',
+    ghost:
+      'bg-transparent text-surface-700 hover:bg-surface-100 focus-visible:ring-surface-400',
+    accent:
+      'bg-secondary-500 hover:bg-secondary-600 active:bg-secondary-700 text-white shadow-soft-md hover:shadow-soft-lg focus-visible:ring-secondary-500',
+    glass:
+      'bg-white/70 backdrop-blur-md border border-white/80 text-surface-900 hover:bg-white shadow-soft focus-visible:ring-primary-500',
   }
 
   const sizes = {
     sm: 'py-2 px-4 text-sm',
     md: 'py-3 px-6 text-base',
-    lg: 'py-4 px-8 text-lg'
+    lg: 'py-3.5 px-8 text-base',
+    xl: 'py-4 px-10 text-lg',
   }
 
-  const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed transform-none' : ''} ${className}`
+  const classes = `${base} ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${
+    disabled ? 'opacity-50 cursor-not-allowed' : ''
+  } ${className}`
 
   return (
     <motion.button
       className={classes}
       disabled={disabled}
       onClick={onClick}
-      whileHover={!disabled ? { scale: 1.05 } : {}}
-      whileTap={!disabled ? { scale: 0.95 } : {}}
+      whileHover={!disabled ? { y: -1 } : {}}
+      whileTap={!disabled ? { scale: 0.97 } : {}}
+      transition={{ duration: 0.15 }}
       {...props}
     >
       {children}

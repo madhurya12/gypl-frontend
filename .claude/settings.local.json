@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls ../../../node_modules/lucide-react 2>&1 | head -5)",
+      "Bash(npm run *)"
+    ]
+  }
+}

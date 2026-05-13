@@ -21,7 +21,7 @@ function App() {
     <AdminAuthProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen flex flex-col bg-gray-50">
+          <div className="min-h-screen flex flex-col bg-surface-50">
             <Navbar />
             <main className="flex-grow">
               <Routes>
@@ -50,7 +50,24 @@ function App() {
               </Routes>
             </main>
             <Footer />
-            <Toaster position="top-right" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3500,
+                style: {
+                  background: '#1c1917',
+                  color: '#fafaf9',
+                  border: '1px solid #292524',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.08)',
+                },
+                success: { iconTheme: { primary: '#14b8a6', secondary: '#fafaf9' } },
+                error: { iconTheme: { primary: '#f43f5e', secondary: '#fafaf9' } },
+              }}
+            />
           </div>
         </Router>
       </AuthProvider>

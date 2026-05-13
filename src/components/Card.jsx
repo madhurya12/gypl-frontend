@@ -5,23 +5,23 @@ const Card = ({
   className = '',
   glass = false,
   hover = true,
+  padded = true,
   ...props
 }) => {
-  const baseClasses = 'rounded-2xl p-6 transition-all duration-300'
-
-  const glassClasses = glass
-    ? 'bg-white/70 backdrop-blur-md border border-white/20 shadow-xl'
-    : 'bg-white shadow-lg'
-
-  const hoverClasses = hover ? 'hover:shadow-2xl hover:-translate-y-1' : ''
-
-  const classes = `${baseClasses} ${glassClasses} ${hoverClasses} ${className}`
+  const base = 'rounded-2xl transition-all duration-200'
+  const padding = padded ? 'p-7' : ''
+  const surface = glass
+    ? 'bg-white/60 backdrop-blur-xl border border-white/70 shadow-soft-md'
+    : 'bg-white border border-surface-200/70 shadow-soft'
+  const hoverClasses = hover
+    ? 'hover:shadow-soft-lg hover:border-surface-300/80'
+    : ''
 
   return (
     <motion.div
-      className={classes}
-      whileHover={hover ? { y: -4, scale: 1.02 } : {}}
-      transition={{ duration: 0.3 }}
+      className={`${base} ${padding} ${surface} ${hoverClasses} ${className}`}
+      whileHover={hover ? { y: -3 } : {}}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       {...props}
     >
       {children}

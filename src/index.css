@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,62 +10,90 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #fafaf9;
   min-height: 100vh;
-  color: #1e293b;
+  color: #1c1917;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-/* Glassmorphism utilities */
+/* Subtle dotted/grid background pattern for sections */
+.bg-grid {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+.bg-grid-fade {
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+          mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+}
+
+/* Refined glass — much lighter, modern */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(28, 25, 23, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Button components */
+/* Modern button primitives — flat, refined */
 .btn-primary {
-  @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-soft-md hover:shadow-soft-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
 }
 
 .btn-secondary {
-  @apply bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 font-semibold py-3 px-8 rounded-xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-soft-md hover:shadow-soft-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-surface-500 focus-visible:ring-offset-2;
 }
 
 .btn-outline {
-  @apply bg-transparent border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center gap-2 bg-white border border-surface-200 hover:bg-surface-50 hover:border-surface-300 text-surface-900 font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2;
 }
 
-/* Card styles */
-.card-glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl;
+/* Modern card primitives */
+.card {
+  @apply bg-white border border-surface-200/70 rounded-2xl shadow-soft transition-all duration-200;
 }
 
 .card-hover {
-  @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+  @apply hover:shadow-soft-lg hover:border-surface-300 hover:-translate-y-0.5;
+}
+
+/* Modern input */
+.input {
+  @apply w-full px-4 py-3 bg-white border border-surface-200 rounded-xl text-surface-900 placeholder:text-surface-400 transition-all duration-200 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10;
+}
+
+.input-error {
+  @apply border-red-400 focus:border-red-500 focus:ring-red-500/10;
 }
 
 /* Loading spinner */
 .spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #0ea5e9;
+  border: 3px solid rgba(13, 148, 136, 0.15);
+  border-top: 3px solid #0d9488;
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -89,10 +117,47 @@ body {
   }
 }
 
-/* Gradient text */
+/* Gradient text — refined, single-tone with subtle warm accent */
 .gradient-text {
-  background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
+}
+
+.gradient-text-warm {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Section eyebrow label */
+.eyebrow {
+  @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold uppercase tracking-wider;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 6px;
+  border: 2px solid #fafaf9;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
+
+/* Selection */
+::selection {
+  background: rgba(13, 148, 136, 0.18);
+  color: #115e59;
 }
