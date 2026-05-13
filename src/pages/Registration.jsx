@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { AuthContext } from '../contexts/AuthContext'
-import { participantAPI, competitionAPI, authAPI } from '../services/api'
+import { participantAPI, competitionAPI, authAPI, paymentAPI } from '../services/api'
 
 export default function Registration() {
   const navigate = useNavigate()
@@ -13,6 +13,7 @@ export default function Registration() {
   const [competitionsLoading, setCompetitionsLoading] = useState(true)
   const [userDetailsLoading, setUserDetailsLoading] = useState(true)
   const [userDetails, setUserDetails] = useState(null)
+  const [paymentProcessing, setPaymentProcessing] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -25,6 +26,17 @@ export default function Registration() {
   })
 
   const [errors, setErrors] = useState({})
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    document.body.appendChild(script)
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
 
   // Fetch user details and competitions on mount
   useEffect(() => {
@@ -98,6 +110,122 @@ export default function Registration() {
       ...prev,
       [name]: value
     }))
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!validateForm()) {
+      toast.error('Please fill all fields correctly')
+      return
+    }
+
+    setPaymentProcessing(true)
+    try {
+      // Step 1: Create payment order
+      const orderResponse = await paymentAPI.createOrder({
+        competitionId: formData.competition
+      })
+
+      if (!orderResponse.data.success) {
+        toast.error(orderResponse.data.message || 'Failed to create order')
+        setPaymentProcessing(false)
+        return
+      }
+
+      const { orderId, amount, paymentId } = orderResponse.data
+      const selectedCompetition = competitions.find(c => c._id === formData.competition)
+
+      // Step 2: Open Razorpay checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        order_id: orderId,
+        amount: amount,
+        currency: 'INR',
+        name: 'Grand Yoga Premier League',
+        description: `Registration for ${selectedCompetition?.name}`,
+        image: 'https://via.placeholder.com/150',
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone
+        },
+        handler: async (response) => {
+          // Step 3: Handle payment success and verify
+          await verifyPaymentWithBackend(
+            orderId,
+            paymentId,
+            response.razorpay_payment_id,
+            response.razorpay_signature
+          )
+        },
+        modal: {
+          ondismiss: () => {
+            toast.info('Payment cancelled. You can retry later.')
+            setPaymentProcessing(false)
+          }
+        },
+        theme: {
+          color: '#16a34a' // Yoga green color
+        }
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.open()
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to initiate payment'
+      toast.error(errorMsg)
+      setPaymentProcessing(false)
+    }
+  }
+
+  const verifyPaymentWithBackend = async (orderId, paymentId, razorpayPaymentId, razorpaySignature) => {
+    try {
+      setLoading(true)
+      
+      const verifyResponse = await paymentAPI.verifyPayment({
+        orderId,
+        paymentId,
+        razorpayPaymentId,
+        razorpaySignature
+      })
+
+      if (verifyResponse.data.success) {
+        toast.success('Payment successful! Registration confirmed! 🎉')
+        setFormData({
+          name: '',
+          age: '',
+          gender: '',
+          competition: '',
+          instructor: '',
+          phone: '',
+          email: '',
+          address: ''
+        })
+        setTimeout(() => {
+          navigate('/my-events')
+        }, 2000)
+      } else {
+        toast.error(verifyResponse.data.message || 'Payment verification failed')
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message || 'Payment verification failed'
+      toast.error(errorMsg)
+    } finally {
+      setLoading(false)
+      setPaymentProcessing(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-yoga-50 to-white py-12">
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({

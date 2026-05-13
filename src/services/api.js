@@ -63,4 +63,10 @@ export const userEventAPI = {
   unregisterFromCompetition: (competitionId) => api.delete(`/user/unregister/${competitionId}`),
 }
 
+export const paymentAPI = {
+  createOrder: (data) => api.post('/payments/create-order', data),
+  verifyPayment: (data) => api.post('/payments/verify-payment', data),
+  getStatus: (paymentId) => api.get(`/payments/${paymentId}`),
+}
+
 export default api
